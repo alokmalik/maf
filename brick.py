@@ -1,5 +1,5 @@
 from cmath import exp
-from this import d
+# from this import d
 import numpy as np
 from maf import Map
 import networkx as nx
@@ -178,15 +178,15 @@ class BrickMap(Map):
         #directions north, east,south, west
         neighbors=self.order_neighbor[order]
         directions=self.order_direction[order]
-        for d,a,b in enumerate(neighbors):
+        for d,[a,b] in enumerate(neighbors):
             if x+a>=0 and x+b>=0 and x+a<self.m and x+b<self.n:
                 #cell is unexplored
-                if self.mat[x+a,y+b]==0:
+                if self.map[x+a,y+b]==0:
                     fov_mat=self.fov(x+a,y+b,view)
                     value=np.sum(fov_mat==-1)
                     unexplored_directions.append(directions[d])
                     unexplored.append(value)
-                elif self.mat[x+a,y+b]==self.explored_cell:
+                elif self.map[x+a,y+b]==self.explored_cell:
                     explored.append([x+a,y+b])
                     explored_directions.append(directions[d])
         if unexplored:
@@ -255,15 +255,19 @@ class BNMAgent:
         mx,my=self.map.convert(self.x,self.y)
         self.indir[mx,my]=direction
         
+        # check loop closure
         act=self.map.mark(self.x,self.y,self.fov)
         
         if not act and self.phase==0 and self.outdir[mx,my]!=(direction+2)%2:
             self.loop_detected=True
-        if self.loop_detected==True and self.map.visited_map[mx,my]==-1:
+        if self.loop_detected==True and self.visited_map[mx,my]==-1:
             self.phase=1
-        if self.phase==1 and self.map.visited_map[mx,my]<self.id:
-            self.map.visited_map[mx,my]=self.id
-
+        if self.phase==1 and self.visited_map[mx,my]<self.id:
+            self.visited_map[mx,my]=self.id
+        if self.phase==1 and self.visited_map[mx,my]==self.id:
+            self.phase=2
+        if self.phase==2 and self.visited_map[mx,my]<self.id:
+            self.phase=0
         
         
 
@@ -293,7 +297,13 @@ class BNMAgent:
             elif action=='terminate':
                 self.terminate=True
         elif self.phase==1:
-            pass
+            mx,my=self.map.convert(self.x,self.y)
+            self.move(self.outdir[mx,my])
+        elif self.phase==2:
+            mx,my=self.map.convert(self.x,self.y)
+            self.move((self.outdir[mx,my]+2)%2)
+
+
     def state(self):
         self.map.mark(self.x,self.y,self.fov)
         return not self.terminate

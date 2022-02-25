@@ -259,9 +259,9 @@ class BNMAgent:
         
         if not act and self.phase==0 and self.outdir[mx,my]!=(direction+2)%2:
             self.loop_detected=True
-        if self.loop_detected=True and self.map.visited_map[mx,my]==-1:
+        if self.loop_detected==True and self.map.visited_map[mx,my]==-1:
             self.phase=1
-        if self.phase=1 and self.map.visited_map[mx,my]<self.id:
+        if self.phase==1 and self.map.visited_map[mx,my]<self.id:
             self.map.visited_map[mx,my]=self.id
 
         
@@ -293,8 +293,7 @@ class BNMAgent:
             elif action=='terminate':
                 self.terminate=True
         elif self.phase==1:
-
-
+            pass
     def state(self):
         self.map.mark(self.x,self.y,self.fov)
         return not self.terminate

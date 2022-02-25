@@ -49,6 +49,10 @@ class GridToGraph:
 
 class BrickMap(Map):
     def __init__(self,grid,num_directions):
+        '''
+        input: grid: numpy array
+        num_directions: only 4
+        '''
         assert num_directions==4, "Brick and Mortar is 4 connected only"
         super().__init__(grid,num_directions)
         #keeps track of which agent visited the cell last time
@@ -65,6 +69,10 @@ class BrickMap(Map):
 
 
     def permutations(self,x):
+        '''
+        input: a list
+        returns all permutations of the elements inside dictionary
+        '''
         if len(x)==1:
             return [x]
         else:
@@ -75,6 +83,9 @@ class BrickMap(Map):
             return ans
 
     def perm_to_dict(self,x):
+        '''
+        converts a list to dictionary 
+        '''
         d={}
         for i,a in enumerate(x):
             d[i]=a[:]
@@ -82,6 +93,7 @@ class BrickMap(Map):
 
     def fov(self,x,y,view):
         '''
+        input: cartesian coordinates of agent and it's field of view
         return the view of the agent located at x,y
         '''
         x,y=self.convert(x,y)
@@ -118,6 +130,7 @@ class BrickMap(Map):
 
     def visit_permission(self,x,y,view):
         '''
+        input: cartesian coordinates of agent and it's field of view
         returns if we're allowed to mark cell as visited
         '''
         #l and b are length and breadth of grid
@@ -134,6 +147,7 @@ class BrickMap(Map):
 
     def mark(self,x,y,view):
         '''
+        input: cartesian coordinates of agent, and it's field of view
         marks a cell visited or explored
         '''
         x,y=self.convert(x,y)
@@ -151,6 +165,10 @@ class BrickMap(Map):
 
 
     def get_direction(self,x,y,view,order):
+        '''
+        input: cartesian coordinates of agent, it's fov, and it's default direction order
+        returns the directions for the agent to move and and actions
+        '''
         unexplored=[]
         unexplored_directions=[]
         explored=[]

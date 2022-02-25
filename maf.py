@@ -211,8 +211,10 @@ class Agent:
         self.mode=0
     
     def move(self,move):
-        '''moves are {0:bottom left,1:left,2:top left,3:bottom
-        4: top, 5: bottom right, 6: right, 7: top right}''' 
+        '''
+        moves are {0:bottom left,1:left,2:top left,3:bottom
+        4: top, 5: bottom right, 6: right, 7: top right}
+        '''
         #top
         if self.d==4 and self.y+1<self.map.get_size()[1]:
             self.y+=1
@@ -250,6 +252,9 @@ class Agent:
 
 
     def next(self):
+        '''
+        move the agent to next state
+        '''
         #search mode
         if self.mode==0:
             values,directions,action=self.map.get_direction(self.x,self.y)

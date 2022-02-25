@@ -32,9 +32,10 @@ class Map:
         self.map=grid
         #y size, x size
         self.m,self.n=self.map.shape
-        assert num_directions==8 , "Grid can be 8 connected only"
+        assert num_directions==8 or num_directions==4, "Grid can be 8 or 4 connected only"
         self.nd=num_directions
         self.explorable=np.sum(self.map==0)
+        #keep count of number of explored cells
         self.explored=0
          
     def convert(self,x,y):

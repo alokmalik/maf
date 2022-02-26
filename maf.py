@@ -24,7 +24,7 @@ class Grid:
 
 
 class Map:
-    def __init__(self,grid,num_directions):
+    def __init__(self,grid:np.ndarray,num_directions:int):
         '''
         input:grid is a numpy array of map
         num_directions: defines if it's a 4 connected grid or 8 connected grid
@@ -38,19 +38,19 @@ class Map:
         #keep count of number of explored cells
         self.explored=0
          
-    def convert(self,x,y):
+    def convert(self,x:int,y:int):
         '''
         To convert cartesian coordinates to numpy matrix coordinates
         '''
         return self.m-y-1,x
     
-    def mark(self,x,y,value):
+    def mark(self,x:int,y:int,value:int):
         x,y=self.convert(x,y)
         if self.map[x,y]==0:
             self.explored+=1
         self.map[x,y]=value
     
-    def grid(self,x,y):
+    def grid(self,x:int,y:int):
         '''
         returns the value of x,y coordinate in grid
         '''
@@ -74,7 +74,7 @@ class Map:
     
         
 class MAFMap(Map):
-    def __init__(self,grid,num_directions,num_poi):
+    def __init__(self,grid:np.ndarray,num_directions:int,num_poi:int):
         '''
         grid: the numpy array of map
         num_directions: 4 connected or 8 connected grid
@@ -89,9 +89,12 @@ class MAFMap(Map):
             for n in range(len(poi)):
                 self.map[idxes[poi[n]][0],idxes[poi[n]][1]]=-2
         
-    def mark(self,x,y,value):
+    def mark(self,x:int,y:int,value:int):
         '''
-        mark a cell with a particular value
+        x: x cartesian coordinate of array
+        y: y cartesian coordinate of array
+        value: the counter of the agent
+        return: mark a cell with a particular value
         '''
         x,y=self.convert(x,y)
         if self.map[x,y]==0:
@@ -108,21 +111,22 @@ class MAFMap(Map):
 
     def covered(self):
         '''
-        returns fraction of map covered
+        return: fraction of map covered
         '''
         return self.explored/self.explorable
     
     def poi_covered(self):
         '''
-        returns fraction of points of interest covered 
+        return: fraction of points of interest covered 
         '''
         return self.explored_poi/self.num_poi
         
     
-    def get_direction(self,x,y):
+    def get_direction(self,x:int,y:int):
         '''
-        input: x and y coordinate and current direction of agent
-        output: available directions and action
+        x: x cartesian coordinate of array
+        y: y cartesian coordinate of array
+        return: available directions and action
         '''
         if self.nd==8:
             unexplored=[]
@@ -155,12 +159,12 @@ class MAFMap(Map):
         elif self.nd==4:
             raise NotImplementedError("This method for 4 connected grid hasn't been implemented yet")
 
-    def get_explored(self,x,y):
+    #def get_direction(self,x:int,y:int):
         '''
         input: x and y coordinate and current direction of agent
         output: direction to go to, value of cell, and action
         '''
-        if self.nd==8:
+        '''if self.nd==8:
             explored=[]
             explored_directions=[]
             d=0
@@ -180,18 +184,18 @@ class MAFMap(Map):
             else:
                 raise NameError("Impossible scenario, agent can't move anywhere!!!")
         elif self.nd==4:
-            raise NotImplementedError("This method for 4 connected grid hasn't been implemented yet")
+            raise NotImplementedError("This method for 4 connected grid hasn't been implemented yet")'''
 
             
         
         
 class Agent:
-    def __init__(self,x,y,sc,direction,map_object):
+    def __init__(self,x:int,y:int,direction:int,map_object:MAFMap):
         '''
-        input:
-        x and y: start position of agent
-        direction: initial direction agent is facing
-        map_object: The map with agent will explore created from Map class
+        x: x cartesian coordinate of agent
+        y: y cartesian coordinate of agent
+        direction: the initial facing direction of agent
+        map_object: map object which agent will explore
         '''
         #start position of agent
         self.startx=x
@@ -204,14 +208,15 @@ class Agent:
             d=np.random.randint(8)
         self.d=direction
         #counter of every agent
-        self.sc=sc
+        self.sc=1
         #map object is constructed from map class
         self.map=map_object
         #0 for 'search' and 1 for 'return'
         self.mode=0
     
-    def move(self,move):
+    def move(self,move:int):
         '''
+        move: direction agent will move to
         moves are {0:bottom left,1:left,2:top left,3:bottom
         4: top, 5: bottom right, 6: right, 7: top right}
         '''
@@ -294,33 +299,3 @@ class Agent:
                 self.mode=0
                 self.sc=1
             return self.x,self.y
-
-
-
-
-
-
-
-                    
-
-
-
-                
-
-                
-
-
-
-
-            
-    
-            
-    
-    
-            
-            
-            
-            
-        
-        
-        

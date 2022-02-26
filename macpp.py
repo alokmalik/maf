@@ -3,7 +3,7 @@ from maf import Map
 import numpy as np
 import networkx as nx
 from collections import deque
-
+import pdb
 class MACPP(Map):
     def __init__(self, grid, num_directions):
         '''
@@ -46,6 +46,7 @@ class MACPP(Map):
             if g.degree(i)==0:
                 g.remove_node(i)
         return g
+
 
     def bfs(self,source,depth):
         '''
@@ -180,19 +181,22 @@ class MACPP(Map):
         '''
         x,y=self.convert(x,y)
         source=self.n*x+y
-        print(source)
+        #print(source)
         if source not in self.graph:
             raise NameError('Trying to visit a marked cell')
         elif self.graph.nodes[source]['explored']!=self.explored_cell:
             self.explored+=1
             self.graph.nodes[source]['explored']=self.explored_cell
             self.map[x,y]=self.explored_cell
-        if source not in self.ap and crds.count(source)<2:
+        if source not in self.ap and np.sum(crds==source)==1:
             self.map[x,y]=self.wall_cell
             self.visited+=1
             self.graph.remove_node(source)
             return True
         return False
+
+    def marked_visited(self):
+        return self.visited/self.explorable
 
 
 class MACPPAgent:
@@ -208,27 +212,30 @@ class MACPPAgent:
         self.depth=5
         x,y=self.map.convert(x,y)
         self.last_cell=self.b*x+y
+        self.terminate=False
 
     def move(self,direction,crds):
         '''
         move the agent in direction and update it's x,y coordinates in cartesian
         '''
         self.map.mark(self.x,self.y,crds)
-        #top
-        if direction==0 and self.y+1<self.map.get_size()[1]:
-            self.y+=1
-        #right
-        elif direction==1 and self.x+1<self.map.get_size()[0]:
-            self.x+=1
-        #bottom
-        elif direction==2 and self.y-1>=0:
-            self.y-=1
-        #left
-        elif direction==3 and self.x-1>=0:
-            self.x-=1
-        #error
-        else:
-            raise NameError('Invalid direction input!!')
+        if len(self.map.graph):
+            #top
+            if direction==0 and self.y+1<self.map.get_size()[1]:
+                self.y+=1
+            #right
+            elif direction==1 and self.x+1<self.map.get_size()[0]:
+                self.x+=1
+            #bottom
+            elif direction==2 and self.y-1>=0:
+                self.y-=1
+            #left
+            elif direction==3 and self.x-1>=0:
+                self.x-=1
+            #error
+            else:
+                raise NameError('Invalid direction input!!')
+            
 
         
 
@@ -247,15 +254,18 @@ class MACPPAgent:
             m=np.argmax(directions)
             pref.append(m)
             directions[m]=float('-inf')
-        
-        if len(self.map.graph)==1:
-            self.map.graph.remove_node(source)
+        #print(len(self.map.graph),np.sum(crds!=-1),end='|')
+        if len(self.map.graph)<=np.sum(crds!=-1) and np.sum(crds==source)>1:
             self.terminate=True
-            return 0,0
+            return -1
+        elif len(self.map.graph)==1:
+            self.move(-1,crds)
+            self.terminate=True
+            return -1
         if am==0 and len(self.map.graph)!=1:
             raise NameError('Available Actions zero')
         elif am==1:
-            for neighbour in self.graph[source]:
+            for neighbour in self.map.graph[source]:
                 if neighbour==source-b:
                     self.move(0,crds)
                     x,y=self.map.convert(self.x,self.y)
@@ -294,3 +304,41 @@ class MACPPAgent:
                 else:
                     continue
             raise NameError('No action Selected,Source: {}, AM: {}, Original Action Preferences: {}, Pref: {}'.format(source,am,pref,directions))
+
+    
+    def state(self):
+        return not self.terminate
+
+
+
+
+            
+if __name__=='__main__':
+
+    l,b=50,50
+    grid=np.zeros((l,b))
+    grid[int(l/2),:]=-1
+    grid[int(l/2),int(b/2)]=0
+    grid[int(l/2),int(b/2)+1]=0
+    
+    m=MACPP(grid,4)
+    agents=[]
+    n=20
+    x,y=m.convert(0,0)
+    print(m.n*x+y)
+    crds=np.ones(n)*(m.n*x+y)
+    for i in range(n):
+        agents.append(MACPPAgent(0,0,i,m))
+
+    i=0
+    while m.marked_visited()<1:
+        if agents[i].state():
+            crds[i]=agents[i].next(crds)
+            i+=1
+            i%=n
+            if i==0:
+                #plt.figure(figsize=(25,25))
+                #mask = np.ma.masked_greater(grid,1)
+                #plt.imshow(grid)
+                #plt.imshow(mask,cmap='rainbow')
+                print(i,m.covered(),end=' | ')

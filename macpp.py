@@ -17,6 +17,7 @@ class MACPP(Map):
         self.visited=0
         self.graph=self.makegraph()
         #self.graph_explored = nx.get_node_attributes(self.graph, "explored")
+        self.visit_frequency=np.zeros_like(self.map)
 
     def makegraph(self):
         '''
@@ -179,7 +180,9 @@ class MACPP(Map):
         input: cartesian coordinates of agent, and it's field of view
         marks a cell visited or explored
         '''
+        
         x,y=self.convert(x,y)
+        self.visit_frequency[x,y]+=1
         source=self.n*x+y
         #print(source)
         if source not in self.graph:
@@ -213,12 +216,18 @@ class MACPPAgent:
         x,y=self.map.convert(x,y)
         self.last_cell=self.b*x+y
         self.terminate=False
+        self.visited=0
+        self.num_moves=0
 
     def move(self,direction,crds):
         '''
         move the agent in direction and update it's x,y coordinates in cartesian
         '''
-        self.map.mark(self.x,self.y,crds)
+        self.num_moves+=1
+        mark=self.map.mark(self.x,self.y,crds)
+        if mark:
+            self.visited+=1
+
         if len(self.map.graph):
             #top
             if direction==0 and self.y+1<self.map.get_size()[1]:
@@ -257,11 +266,11 @@ class MACPPAgent:
         #print(len(self.map.graph),np.sum(crds!=-1),end='|')
         if len(self.map.graph)<=np.sum(crds!=-1) and np.sum(crds==source)>1:
             self.terminate=True
-            return -1
+            return self.visited
         elif len(self.map.graph)==1:
             self.move(-1,crds)
             self.terminate=True
-            return -1
+            return self.visited
         if am==0 and len(self.map.graph)!=1:
             raise NameError('Available Actions zero')
         elif am==1:

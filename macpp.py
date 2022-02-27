@@ -180,7 +180,6 @@ class MACPP(Map):
         input: cartesian coordinates of agent, and it's field of view
         marks a cell visited or explored
         '''
-        
         x,y=self.convert(x,y)
         self.visit_frequency[x,y]+=1
         source=self.n*x+y
@@ -253,24 +252,37 @@ class MACPPAgent:
         crds: coordinate of all agents
         '''
         l,b=self.l,self.b
-        directions=self.map.get_direction(crds,self.id,self.depth)
+        directions=np.array(self.map.get_direction(crds,self.id,self.depth),dtype=float)
         source=crds[self.id]
         am=self.map.availablemoves(crds,self.id)
         #actions=actiontuple.copy()
         pref=[]
         #print(am,actiontuple)
-        for i in range(4):
+        i=0
+        #get direction preference order in stack
+        while i<4:
             m=np.argmax(directions)
-            pref.append(m)
-            directions[m]=float('-inf')
+            dp=[m]
+            # if there are multiple direction with same rating, shuffle them
+            while np.sum(directions==directions[m])>1:
+                directions[m]=-np.inf
+                m=np.argmax(directions)
+                dp.append(m)
+            directions[m]=-np.inf
+            np.random.shuffle(dp)
+            while dp:
+                d=dp.pop()
+                pref.append(d)
+                i+=1
+                
         #print(len(self.map.graph),np.sum(crds!=-1),end='|')
-        if len(self.map.graph)<=np.sum(crds!=-1) and np.sum(crds==source)>1:
+        if len(self.map.graph)<=np.sum(crds>0) and np.sum(crds==source)>1:
             self.terminate=True
-            return self.visited
+            return -self.visited
         elif len(self.map.graph)==1:
             self.move(-1,crds)
             self.terminate=True
-            return self.visited
+            return -self.visited
         if am==0 and len(self.map.graph)!=1:
             raise NameError('Available Actions zero')
         elif am==1:
@@ -332,7 +344,7 @@ if __name__=='__main__':
     
     m=MACPP(grid,4)
     agents=[]
-    n=20
+    n=12
     x,y=m.convert(0,0)
     print(m.n*x+y)
     crds=np.ones(n)*(m.n*x+y)
@@ -343,11 +355,11 @@ if __name__=='__main__':
     while m.marked_visited()<1:
         if agents[i].state():
             crds[i]=agents[i].next(crds)
-            i+=1
-            i%=n
-            if i==0:
+        i+=1
+        i%=n
+            #if i==0:
                 #plt.figure(figsize=(25,25))
                 #mask = np.ma.masked_greater(grid,1)
                 #plt.imshow(grid)
                 #plt.imshow(mask,cmap='rainbow')
-                print(i,m.covered(),end=' | ')
+                #print(i,m.marked_visited(),end=' | ')

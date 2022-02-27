@@ -139,7 +139,9 @@ class BrickMap(Map):
         return: if we're allowed to mark cell as visited
         '''
         #l and b are length and breadth of grid
-        x,y=crds[agent]
+        oned=crds[agent]
+        xl,yl=self.get_size()
+        x,y=oned//xl,oned%xl
         mx,my=self.convert(x,y)
         grid=self.fov(mx,my,view)
         l,b=grid.shape
@@ -159,7 +161,9 @@ class BrickMap(Map):
         view: field of view of agent
         returns: marks a cell visited or explored
         '''
-        x,y=crds[agent]
+        oned=crds[agent]
+        xl,yl=self.get_size()
+        x,y=oned//xl,oned%xl
         mx,my=self.convert(x,y)
         if self.map[mx,my]==self.wall_cell:
             raise NameError('Trying to visit a marked cell')
@@ -191,7 +195,9 @@ class BrickMap(Map):
         unexplored_directions=[]
         explored=[]
         explored_directions=[]
-        x,y=crds[agent]
+        oned=crds[agent]
+        xl,yl=self.get_size()
+        x,y=oned//xl,oned%xl
         mx,my=self.convert(x,y)
         #american spelling, not british one
         #directions north, east,south, west
@@ -432,7 +438,7 @@ if __name__=='__main__':
     m=BrickMap(grid,4)
     agents=[]
     n=20
-    crds=np.array([(0,0)]*n+[0,0,0])
+    crds=np.array([0]*n)
     for i in range(n):
         agents.append(BNMAgent(0,0,i,m))
     coverage_percentage=[]

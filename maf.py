@@ -43,6 +43,12 @@ class Map:
         To convert cartesian coordinates to numpy matrix coordinates
         '''
         return self.m-y-1,x
+         
+    def reverse_convert(self,x,y):
+        '''
+        To convert numpy matrix coordinates to cartesian coordinates
+        '''
+        return y,self.m-x-1
     
     def mark(self,x,y,value):
         x,y=self.convert(x,y)

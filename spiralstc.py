@@ -36,6 +36,8 @@ class SpiralMap(MACPP):
     def makeSpiralGrid(self):
         '''
         converts the original map to spiral grid map
+        this uses the self.map grid which has cells of 1 to indicate passable terrain and -1 to indicate walls
+        "filled" in this function checks if all 4 cell are passable. If they are passable it will add value of 1 (self.explorable) into the spiral grid
         '''
         grid = []
 

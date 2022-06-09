@@ -19,12 +19,14 @@ class MACPP(Map):
         #self.graph_explored = nx.get_node_attributes(self.graph, "explored")
         self.visit_frequency=np.zeros_like(self.map)
 
-    def makegraph(self):
+    def makegraph(self,grid:np.ndarray=None):
         '''
         returns the graph object of numpy array
         '''
+        if not grid:
+            grid=self.map
         #l is length, b is breadth
-        l,b=self.map.shape
+        l,b=grid.shape
         g = nx.Graph()
         #add one node for each cell in self.graph object
         for i in range(l*b):
@@ -33,14 +35,14 @@ class MACPP(Map):
             #convert 1d coordinate of graph to 2d coordinate of grid
             x=i//b
             y=i%b
-            if self.map[x,y]!=self.wall_cell:
-                if x-1>=0 and self.map[x-1,y]!=self.wall_cell:
+            if grid[x,y]!=self.wall_cell:
+                if x-1>=0 and grid[x-1,y]!=self.wall_cell:
                     g.add_edge(x*b+y,(x-1)*b+y)
-                if x+1<l and self.map[x+1,y]!=self.wall_cell:
+                if x+1<l and grid[x+1,y]!=self.wall_cell:
                     g.add_edge(x*b+y,(x+1)*b+y)
-                if y-1>=0 and self.map[x,y-1]!=self.wall_cell:
+                if y-1>=0 and grid[x,y-1]!=self.wall_cell:
                     g.add_edge(x*b+y,x*b+y-1)
-                if y+1<b and self.map[x,y+1]!=self.wall_cell:
+                if y+1<b and grid[x,y+1]!=self.wall_cell:
                     g.add_edge(x*b+y,x*b+y+1)
         #remove all the node with degree 1
         for i in range(l*b):

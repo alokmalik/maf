@@ -59,12 +59,37 @@ class SpiralMap(MACPP):
 
 
 
-    def spiralSTC(self,):
+    def spiralSTC(self,direction:int):
         '''
         input:spiral graph
+        direction == 1 means ccw
+        direction == 0 means cw
         returns spiral tree(networkx object) on the spiral graph
         '''
-        pass
+        assert direction == 1 or direction == 0,  "direction can only be 1 or 0"
+        directionsccw = [[0,-1],[1,0],[0,1],[-1,0]]
+        directionscw = [[0,1],[1,0],[0,-1],[-1,0]]
+        pathdirection = directionsccw
+
+        if direction == 0:
+            pathdirection = directionscw
+        
+        self.spiralmovement(0,0,[],[],0)
+
+    
+    def spiralmovement(self,i,j,path,fullpath,currenttick):
+        righti = i+(possibledirections[(current+1)%4][0])
+        rightj = j+(possibledirections[(current+1)%4][1])
+                    
+        topi = i+(possibledirections[(current)%4][0])
+        topj = j+(possibledirections[(current)%4][1])
+                
+        bottomi = i+(possibledirections[(current+2)%4][0])
+        bottomj = j+(possibledirections[(current+2)%4][1])
+                
+        lefti = i+(possibledirections[(current+3)%4][0])
+        leftj = j+(possibledirections[(current+3)%4][1])
+
 
     
 

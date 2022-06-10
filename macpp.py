@@ -23,7 +23,7 @@ class MACPP(Map):
         '''
         returns the graph object of numpy array
         '''
-        if not grid:
+        if grid is None:
             grid=self.map
         #l is length, b is breadth
         l,b=grid.shape

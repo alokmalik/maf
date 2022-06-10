@@ -1,3 +1,4 @@
+from lib2to3.pytree import convert
 from tkinter import Y
 from macpp import MACPP
 import numpy as np
@@ -14,6 +15,8 @@ class SpiralMap(MACPP):
         
         self.spiralmap=self.makeSpiralGrid()
         self.spiralgraph=self.makegraph(self.spiralmap)
+        
+        self.tree=self.spiralSTC(1,0,0)
         
         
 
@@ -48,24 +51,25 @@ class SpiralMap(MACPP):
             for xpoint in range(grid.shape[0]):
                 #specify in doc string
                 filled = self.map[ypoint*2][xpoint*2] + self.map[ypoint*2][xpoint*2+1] + self.map[ypoint*2+1][xpoint*2] + self.map[ypoint*2+1][xpoint*2+1]
-                if filled == 4 * self.explorable_space:
-                    grid[ypoint][xpoint] = self.explorable_space
-                else:
+                if filled != 0:
                     grid[ypoint][xpoint] = self.unexplorable_space
-                
         return grid
 
 
 
 
 
-    def spiralSTC(self,direction:int):
+    def spiralSTC(self,direction:int,startx:int,starty:int):
         '''
         input:spiral graph
         direction == 1 means ccw
         direction == 0 means cw
         returns spiral tree(networkx object) on the spiral graph
         '''
+
+
+        starty, startx = self.convert(startx,starty)
+
         assert direction == 1 or direction == 0,  "direction can only be 1 or 0"
         directionsccw = [[0,-1],[1,0],[0,1],[-1,0]]
         directionscw = [[0,1],[1,0],[0,-1],[-1,0]]
@@ -74,21 +78,23 @@ class SpiralMap(MACPP):
         if direction == 0:
             pathdirection = directionscw
         
-        self.spiralmovement(0,0,[],[],0)
+        self.spiralmovement(startx,starty,0,[],[],0,direction)
 
     
-    def spiralmovement(self,i,j,path,fullpath,currenttick):
-        righti = i+(possibledirections[(current+1)%4][0])
-        rightj = j+(possibledirections[(current+1)%4][1])
-                    
-        topi = i+(possibledirections[(current)%4][0])
-        topj = j+(possibledirections[(current)%4][1])
-                
-        bottomi = i+(possibledirections[(current+2)%4][0])
-        bottomj = j+(possibledirections[(current+2)%4][1])
-                
-        lefti = i+(possibledirections[(current+3)%4][0])
-        leftj = j+(possibledirections[(current+3)%4][1])
+    def spiralmovement(self,i:int,j:int,numberpassed:int,path:list,fullpath:list,currentdirection:int,direction:list):
+        
+        #if numberpassed < self.spiralgraph.number_of_nodes:
+        print(self.spiralgraph.number_of_nodes())
+        #    pass
+
+        
+
+
+
+
+
+
+        
 
 
     
@@ -97,4 +103,4 @@ class SpiralMap(MACPP):
 
 
 
-s=SpiralMap(np.ones((100,100)),4)
+s=SpiralMap(np.zeros((100,100)),4)

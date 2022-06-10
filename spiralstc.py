@@ -59,7 +59,7 @@ class SpiralMap(MACPP):
 
 
 
-    def spiralSTC(self,direction:int,startx:int,starty:int):
+    def spiralSTC(self,direction:int,x:int,y:int):
         '''
         input:spiral graph
         direction == 1 means ccw
@@ -68,7 +68,8 @@ class SpiralMap(MACPP):
         '''
 
 
-        starty, startx = self.convert(startx,starty)
+        startx = self.spiralmap.shape[0]-y-1
+        starty = x
 
         assert direction == 1 or direction == 0,  "direction can only be 1 or 0"
         directionsccw = [[0,-1],[1,0],[0,1],[-1,0]]
@@ -78,14 +79,57 @@ class SpiralMap(MACPP):
         if direction == 0:
             pathdirection = directionscw
         
-        self.spiralmovement(startx,starty,0,[],[],0,direction)
+        path,fullpath = self.spiralmovement(startx,starty,0,[],[],-1,pathdirection,[])
+        print(path)
+        print(len(path))
+        print("done")
 
     
-    def spiralmovement(self,i:int,j:int,numberpassed:int,path:list,fullpath:list,currentdirection:int,direction:list):
+    def spiralmovement(self,xpos:int,ypos:int,numberpassed:int,path:list,fullpath:list,currentdirection:int,direction:list,trypath:list):
+        node_number = xpos*self.spiralmap.shape[0]+ypos
+        #if node_number == 19:
+        #    print("here")
+        trypath.append(node_number)
+        print(currentdirection%4)
         
-        #if numberpassed < self.spiralgraph.number_of_nodes:
-        print(self.spiralgraph.number_of_nodes())
-        #    pass
+        if numberpassed >= self.spiralgraph.number_of_nodes():
+            print("done")
+            return path,fullpath
+        
+        if xpos < self.spiralmap.shape[1] and xpos >= 0 and ypos < self.spiralmap.shape[0] and ypos >= 0:
+            if self.spiralgraph.has_node(node_number):
+                if self.spiralgraph.nodes[node_number]["explored"] == 0:
+                    print("to be passed")
+                    numberpassed += 1
+
+                    self.spiralgraph.nodes[node_number]["explored"] = 1
+                    path.append(node_number)
+                    fullpath.append(node_number)
+
+                    currentdirection += 1
+                    newx = xpos + direction[currentdirection%4][1]
+                    newy = ypos + direction[currentdirection%4][0]
+                    path,fullpath=self.spiralmovement(newx,newy,numberpassed,path,fullpath,currentdirection,direction,trypath)
+
+                    currentdirection += 1
+                    newx = xpos + direction[currentdirection%4][1]
+                    newy = ypos + direction[currentdirection%4][0]
+                    path,fullpath=self.spiralmovement(newx,newy,numberpassed,path,fullpath,currentdirection,direction,trypath)
+
+                    currentdirection += 1
+                    newx = xpos + direction[currentdirection%4][1]
+                    newy = ypos + direction[currentdirection%4][0]
+                    path,fullpath=self.spiralmovement(newx,newy,numberpassed,path,fullpath,currentdirection,direction,trypath)
+
+                    currentdirection += 1
+                    newx = xpos + direction[currentdirection%4][1]
+                    newy = ypos + direction[currentdirection%4][0]
+                    path,fullpath=self.spiralmovement(newx,newy,numberpassed,path,fullpath,currentdirection,direction,trypath)
+
+        
+        
+        return path,fullpath
+        
 
         
 
@@ -103,4 +147,4 @@ class SpiralMap(MACPP):
 
 
 
-s=SpiralMap(np.zeros((100,100)),4)
+s=SpiralMap(np.zeros((10,10)),4)

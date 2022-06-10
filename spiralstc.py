@@ -1,3 +1,4 @@
+from lib2to3.pytree import convert
 from tkinter import Y
 from macpp import MACPP
 import numpy as np
@@ -14,6 +15,8 @@ class SpiralMap(MACPP):
         
         self.spiralmap=self.makeSpiralGrid()
         self.spiralgraph=self.makegraph(self.spiralmap)
+        
+        self.tree=self.spiralSTC(1,0,0)
         
         
 
@@ -36,6 +39,8 @@ class SpiralMap(MACPP):
     def makeSpiralGrid(self):
         '''
         converts the original map to spiral grid map
+        this uses the self.map grid which has cells of 1 to indicate passable terrain and -1 to indicate walls
+        "filled" in this function checks if all 4 cell are passable. If they are passable it will add value of 1 (self.explorable) into the spiral grid
         '''
         grid = []
 
@@ -46,23 +51,51 @@ class SpiralMap(MACPP):
             for xpoint in range(grid.shape[0]):
                 #specify in doc string
                 filled = self.map[ypoint*2][xpoint*2] + self.map[ypoint*2][xpoint*2+1] + self.map[ypoint*2+1][xpoint*2] + self.map[ypoint*2+1][xpoint*2+1]
-                if filled == 4 * self.explorable_space:
-                    grid[ypoint][xpoint] = self.explorable_space
-                else:
+                if filled != 0:
                     grid[ypoint][xpoint] = self.unexplorable_space
-                
         return grid
 
 
 
 
 
-    def spiralSTC(self,):
+    def spiralSTC(self,direction:int,startx:int,starty:int):
         '''
         input:spiral graph
+        direction == 1 means ccw
+        direction == 0 means cw
         returns spiral tree(networkx object) on the spiral graph
         '''
-        pass
+
+
+        starty, startx = self.convert(startx,starty)
+
+        assert direction == 1 or direction == 0,  "direction can only be 1 or 0"
+        directionsccw = [[0,-1],[1,0],[0,1],[-1,0]]
+        directionscw = [[0,1],[1,0],[0,-1],[-1,0]]
+        pathdirection = directionsccw
+
+        if direction == 0:
+            pathdirection = directionscw
+        
+        self.spiralmovement(startx,starty,0,[],[],0,direction)
+
+    
+    def spiralmovement(self,i:int,j:int,numberpassed:int,path:list,fullpath:list,currentdirection:int,direction:list):
+        
+        #if numberpassed < self.spiralgraph.number_of_nodes:
+        print(self.spiralgraph.number_of_nodes())
+        #    pass
+
+        
+
+
+
+
+
+
+        
+
 
     
 
@@ -70,4 +103,4 @@ class SpiralMap(MACPP):
 
 
 
-s=SpiralMap(np.ones((100,100)),4)
+s=SpiralMap(np.zeros((100,100)),4)

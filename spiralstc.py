@@ -39,12 +39,16 @@ class SpiralMap(MACPP):
     def makeSpiralGrid(self):
         '''
         converts the original map to spiral grid map
-        this uses the self.map grid which has cells of 1 to indicate passable terrain and -1 to indicate walls
-        "filled" in this function checks if all 4 cell are passable. If they are passable it will add value of 1 (self.explorable) into the spiral grid
+        this uses the self.map grid which has cells of 0 to indicate passable terrain and -1 to indicate walls
+        "filled" in this function checks if all 0 cell are passable. If they are passable it will add value of 0 (self.explorable) into the spiral grid
         '''
         grid = []
 
         grid = np.zeros((self.m//2,self.n//2))
+        self.map[0][6] = -1
+        self.map[2][6] = -1
+        self.map[4][6] = -1
+        self.map[6][6] = -1
         
         
         for ypoint in range(grid.shape[1]):
@@ -53,6 +57,7 @@ class SpiralMap(MACPP):
                 filled = self.map[ypoint*2][xpoint*2] + self.map[ypoint*2][xpoint*2+1] + self.map[ypoint*2+1][xpoint*2] + self.map[ypoint*2+1][xpoint*2+1]
                 if filled != 0:
                     grid[ypoint][xpoint] = self.unexplorable_space
+        print(grid)
         return grid
 
 
@@ -79,27 +84,37 @@ class SpiralMap(MACPP):
         if direction == 0:
             pathdirection = directionscw
         
-        path,fullpath = self.spiralmovement(startx,starty,0,[],[],-1,pathdirection,[])
+        path,fullpath,numberpassed = self.spiralmovement(startx,starty,0,[],[],-1,pathdirection,[])
         print(path)
         print(len(path))
-        print("done")
+        print(self.spiralgraph.number_of_nodes())
+        print(fullpath)
+        return path,fullpath
 
     
     def spiralmovement(self,xpos:int,ypos:int,numberpassed:int,path:list,fullpath:list,currentdirection:int,direction:list,trypath:list):
+        '''
+        recursive functions to find the spiral tree path
+
+        returns 3 values:
+        path = non backtracking tree path 
+        fullpath = backtracking tree path for when a second branch of the tree is needed
+        numberpassed = value to indicate total number of unique nodes covered (used only to make sure all point in graph passed)
+        
+        '''
+        
+        
         node_number = xpos*self.spiralmap.shape[0]+ypos
-        #if node_number == 19:
-        #    print("here")
+        
         trypath.append(node_number)
-        print(currentdirection%4)
         
         if numberpassed >= self.spiralgraph.number_of_nodes():
-            print("done")
-            return path,fullpath
+            return path,fullpath,numberpassed
         
         if xpos < self.spiralmap.shape[1] and xpos >= 0 and ypos < self.spiralmap.shape[0] and ypos >= 0:
             if self.spiralgraph.has_node(node_number):
                 if self.spiralgraph.nodes[node_number]["explored"] == 0:
-                    print("to be passed")
+                    #print("to be passed")
                     numberpassed += 1
 
                     self.spiralgraph.nodes[node_number]["explored"] = 1
@@ -109,26 +124,34 @@ class SpiralMap(MACPP):
                     currentdirection += 1
                     newx = xpos + direction[currentdirection%4][1]
                     newy = ypos + direction[currentdirection%4][0]
-                    path,fullpath=self.spiralmovement(newx,newy,numberpassed,path,fullpath,currentdirection,direction,trypath)
+                    path,fullpath,numberpassed=self.spiralmovement(newx,newy,numberpassed,path,fullpath,currentdirection,direction,trypath)
+                    if fullpath[-1] != node_number and numberpassed < self.spiralgraph.number_of_nodes():
+                        fullpath.append(node_number)
 
                     currentdirection += 1
                     newx = xpos + direction[currentdirection%4][1]
                     newy = ypos + direction[currentdirection%4][0]
-                    path,fullpath=self.spiralmovement(newx,newy,numberpassed,path,fullpath,currentdirection,direction,trypath)
+                    path,fullpath,numberpassed=self.spiralmovement(newx,newy,numberpassed,path,fullpath,currentdirection,direction,trypath)
+                    if fullpath[-1] != node_number and numberpassed < self.spiralgraph.number_of_nodes():
+                        fullpath.append(node_number)
 
                     currentdirection += 1
                     newx = xpos + direction[currentdirection%4][1]
                     newy = ypos + direction[currentdirection%4][0]
-                    path,fullpath=self.spiralmovement(newx,newy,numberpassed,path,fullpath,currentdirection,direction,trypath)
+                    path,fullpath,numberpassed=self.spiralmovement(newx,newy,numberpassed,path,fullpath,currentdirection,direction,trypath)
+                    if fullpath[-1] != node_number and numberpassed < self.spiralgraph.number_of_nodes():
+                        fullpath.append(node_number)
 
                     currentdirection += 1
                     newx = xpos + direction[currentdirection%4][1]
                     newy = ypos + direction[currentdirection%4][0]
-                    path,fullpath=self.spiralmovement(newx,newy,numberpassed,path,fullpath,currentdirection,direction,trypath)
+                    path,fullpath,numberpassed=self.spiralmovement(newx,newy,numberpassed,path,fullpath,currentdirection,direction,trypath)
+                    if fullpath[-1] != node_number and numberpassed < self.spiralgraph.number_of_nodes()-1:
+                        fullpath.append(node_number)
 
         
         
-        return path,fullpath
+        return path,fullpath,numberpassed
         
 
         

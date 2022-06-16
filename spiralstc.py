@@ -219,6 +219,8 @@ class SpiralMap(MACPP):
                         coveragepath.append([prevP[0]-1,prevP[1]-1])
                         diffP = [currentP[0] - coveragepath[-1][0],currentP[1] - currentP[1]]
                         prevP = coveragepath[-1]
+                    elif prevdiff[1] == -1:
+                        coveragepath.append([prevP[0],prevP[1]-1])
                     for j in range(1, diffP[0] + 1):
                         coveragepath.append([prevP[0] + j,currentP[1]])
 
@@ -232,8 +234,11 @@ class SpiralMap(MACPP):
                         coveragepath.append([prevP[0]+1,prevP[1]+1])
                         diffP = [currentP[0] - coveragepath[-1][0],currentP[1] - currentP[1]]
                         prevP = coveragepath[-1]
+                    elif prevdiff[1] == 1:
+                        coveragepath.append([prevP[0],prevP[1]+1])
                     for j in range(abs(diffP[0])):
                         coveragepath.append([prevP[0] - j -1,currentP[1]])
+                        
                 elif diff[1] == 1:
                     currentP = [self.fulltree_points[i][0] * 2 + 1,self.fulltree_points[i][1] * 2]
                     prevP = coveragepath[-1]
@@ -243,6 +248,8 @@ class SpiralMap(MACPP):
                         coveragepath.append([prevP[0]+1,prevP[1]-1])
                         diffP = [currentP[0] - coveragepath[-1][0],currentP[1] - currentP[1]]
                         prevP = coveragepath[-1]
+                    elif prevdiff[0] == 1:
+                        coveragepath.append([prevP[0]+1,prevP[1]])
                     for j in range(1, diffP[1] + 1):
                         coveragepath.append([currentP[0],prevP[1]+j])
 
@@ -251,11 +258,12 @@ class SpiralMap(MACPP):
                     prevP = coveragepath[-1]
                     diffP = [currentP[0] - prevP[0],currentP[1] - prevP[1]]
                     if prevdiff[1] == diff[1] * -1:
-
                         coveragepath.append([prevP[0],prevP[1]+1])
                         coveragepath.append([prevP[0]-1,prevP[1]+1])
                         diffP = [currentP[0] - coveragepath[-1][0],currentP[1] - currentP[1]]
                         prevP = coveragepath[-1]
+                    elif prevdiff[0] == -1:
+                        coveragepath.append([prevP[0]-1,prevP[1]])
                     for j in range(abs(diffP[1])):
                         coveragepath.append([currentP[0],prevP[1]-j-1])
             prev = current

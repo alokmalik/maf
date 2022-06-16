@@ -16,7 +16,9 @@ class SpiralMap(MACPP):
         self.spiralmap=self.makeSpiralGrid()
         self.spiralgraph=self.makegraph(self.spiralmap)
         
-        self.tree=self.spiralSTC(1,0,0)
+        self.tree,self.fulltree,self.fulltree_points=self.spiralSTC(1,0,0)
+        self.coverage = self.pathcoverage()
+        
         
         
 
@@ -45,10 +47,10 @@ class SpiralMap(MACPP):
         grid = []
 
         grid = np.zeros((self.m//2,self.n//2))
-        self.map[0][6] = -1
-        self.map[2][6] = -1
-        self.map[4][6] = -1
-        self.map[6][6] = -1
+        #self.map[0][6] = -1
+        #self.map[2][6] = -1
+        #self.map[4][6] = -1
+        #self.map[6][6] = -1
         
         
         for ypoint in range(grid.shape[1]):
@@ -84,15 +86,12 @@ class SpiralMap(MACPP):
         if direction == 0:
             pathdirection = directionscw
         
-        path,fullpath,numberpassed = self.spiralmovement(startx,starty,0,[],[],-1,pathdirection,[])
-        print(path)
-        print(len(path))
-        print(self.spiralgraph.number_of_nodes())
-        print(fullpath)
-        return path,fullpath
+        path,fullpath,numberpassed,fullpathcoordinate = self.spiralmovement(startx,starty,0,[],[],[],-1,pathdirection,[])
+        
+        return path,fullpath,fullpathcoordinate
 
     
-    def spiralmovement(self,xpos:int,ypos:int,numberpassed:int,path:list,fullpath:list,currentdirection:int,direction:list,trypath:list):
+    def spiralmovement(self,xpos:int,ypos:int,numberpassed:int,path:list,fullpath:list,fullpathcoordinate:list,currentdirection:int,direction:list,trypath:list):
         '''
         recursive functions to find the spiral tree path
 
@@ -109,49 +108,212 @@ class SpiralMap(MACPP):
         trypath.append(node_number)
         
         if numberpassed >= self.spiralgraph.number_of_nodes():
-            return path,fullpath,numberpassed
+            return path,fullpath,numberpassed,fullpathcoordinate
         
         if xpos < self.spiralmap.shape[1] and xpos >= 0 and ypos < self.spiralmap.shape[0] and ypos >= 0:
             if self.spiralgraph.has_node(node_number):
                 if self.spiralgraph.nodes[node_number]["explored"] == 0:
-                    #print("to be passed")
                     numberpassed += 1
 
                     self.spiralgraph.nodes[node_number]["explored"] = 1
                     path.append(node_number)
                     fullpath.append(node_number)
+                    fullpathcoordinate.append([xpos,ypos])
 
                     currentdirection += 1
                     newx = xpos + direction[currentdirection%4][1]
                     newy = ypos + direction[currentdirection%4][0]
-                    path,fullpath,numberpassed=self.spiralmovement(newx,newy,numberpassed,path,fullpath,currentdirection,direction,trypath)
+                    path,fullpath,numberpassed,fullpathcoordinate=self.spiralmovement(newx,newy,numberpassed,path,fullpath,fullpathcoordinate,currentdirection,direction,trypath)
                     if fullpath[-1] != node_number and numberpassed < self.spiralgraph.number_of_nodes():
                         fullpath.append(node_number)
+                        fullpathcoordinate.append([xpos,ypos])
 
                     currentdirection += 1
                     newx = xpos + direction[currentdirection%4][1]
                     newy = ypos + direction[currentdirection%4][0]
-                    path,fullpath,numberpassed=self.spiralmovement(newx,newy,numberpassed,path,fullpath,currentdirection,direction,trypath)
+                    path,fullpath,numberpassed,fullpathcoordinate=self.spiralmovement(newx,newy,numberpassed,path,fullpath,fullpathcoordinate,currentdirection,direction,trypath)
                     if fullpath[-1] != node_number and numberpassed < self.spiralgraph.number_of_nodes():
                         fullpath.append(node_number)
+                        fullpathcoordinate.append([xpos,ypos])
 
                     currentdirection += 1
                     newx = xpos + direction[currentdirection%4][1]
                     newy = ypos + direction[currentdirection%4][0]
-                    path,fullpath,numberpassed=self.spiralmovement(newx,newy,numberpassed,path,fullpath,currentdirection,direction,trypath)
+                    path,fullpath,numberpassed,fullpathcoordinate=self.spiralmovement(newx,newy,numberpassed,path,fullpath,fullpathcoordinate,currentdirection,direction,trypath)
                     if fullpath[-1] != node_number and numberpassed < self.spiralgraph.number_of_nodes():
                         fullpath.append(node_number)
+                        fullpathcoordinate.append([xpos,ypos])
 
                     currentdirection += 1
                     newx = xpos + direction[currentdirection%4][1]
                     newy = ypos + direction[currentdirection%4][0]
-                    path,fullpath,numberpassed=self.spiralmovement(newx,newy,numberpassed,path,fullpath,currentdirection,direction,trypath)
+                    path,fullpath,numberpassed,fullpathcoordinate=self.spiralmovement(newx,newy,numberpassed,path,fullpath,fullpathcoordinate,currentdirection,direction,trypath)
                     if fullpath[-1] != node_number and numberpassed < self.spiralgraph.number_of_nodes()-1:
                         fullpath.append(node_number)
+                        fullpathcoordinate.append([xpos,ypos])
 
         
         
-        return path,fullpath,numberpassed
+        return path,fullpath,numberpassed,fullpathcoordinate
+
+    def pathcoverage(self):
+
+
+        prev = [0,0]
+        current = [0,0]
+        coveragepath = []
+        prevdiff = [0,0]
+        print("tree: ",self.fulltree)
+        print("points: ",self.fulltree_points)
+        print("graph: ",self.spiralmap)
+        #print(self.spiralgraph)
+        for i in range(len(self.fulltree)):
+            nextpoint = i + 1
+            prevpoint = i - 1
+            if i == 0:
+                current = self.fulltree_points[i]
+                diff = [self.fulltree_points[nextpoint][0] - current[0],self.fulltree_points[nextpoint][1] - current[1]]
+                print("diff: ",diff)
+
+                if diff[0] == 1:
+                    currentP = [self.fulltree_points[nextpoint][0] * 2,self.fulltree_points[nextpoint][1] * 2]
+                    prevP = [self.fulltree_points[i][0] * 2,self.fulltree_points[i][1] * 2]
+                    diffP = [currentP[0] - prevP[0],currentP[1] - prevP[1]]
+                    coveragepath.append([prevP[0],prevP[1]])
+                
+                elif diff[0] == -1:
+                    currentP = [self.fulltree_points[nextpoint][0] * 2 + 1,self.fulltree_points[nextpoint][1] * 2 + 1]
+                    prevP = [self.fulltree_points[i][0] * 2 + 1,self.fulltree_points[i][1] * 2 + 1]
+                    diffP = [currentP[0] - prevP[0],currentP[1] - prevP[1]]
+                    coveragepath.append([prevP[0],prevP[1]])
+
+                elif diff[1] == 1:
+                    currentP = [self.fulltree_points[nextpoint][0] * 2 + 1,self.fulltree_points[nextpoint][1] * 2]
+                    prevP = [self.fulltree_points[i][0] * 2 + 1,self.fulltree_points[i][1] * 2]
+                    diffP = [currentP[0] - prevP[0],currentP[1] - prevP[1]]
+                    coveragepath.append([prevP[0],prevP[1]])
+
+                elif diff[1] == -1:
+                    currentP = [self.fulltree_points[nextpoint][0] * 2,self.fulltree_points[nextpoint][1] * 2 + 1]
+                    prevP = [self.fulltree_points[i][0] * 2,self.fulltree_points[i][1] * 2 + 1]
+                    diffP = [currentP[0] - prevP[0],currentP[1] - prevP[1]]
+                    coveragepath.append([prevP[0],prevP[1]])
+                print(coveragepath)
+            
+            else:
+                nextpoint = i + 1
+                prevpoint = i - 1
+                current = self.fulltree_points[i]
+                diff = [self.fulltree_points[nextpoint][0] - current[0],self.fulltree_points[nextpoint][1] - current[1]]
+                print("diff: ",diff)
+                if diff[0] == 1:
+                    currentP = [self.fulltree_points[nextpoint][0] * 2,self.fulltree_points[nextpoint][1] * 2]
+                    diffP = [currentP[0] - prevP[0],currentP[1] - prevP[1]]
+                    if prevdiff[0] == diff[0] * -1:
+
+                        coveragepath.append([prevP[0]-1,prevP[1]])
+                        coveragepath.append([prevP[0]-1,currentP[1]])
+                        diffP = [currentP[0] - (prevP[0]-1),currentP[1] - currentP[1]]
+                        prevP = coveragepath[len(coveragepath)-1]
+                    elif diffP[1] != 0:
+                        coveragepath.append([prevP[0],currentP[1]])
+                    for j in range(1, diffP[0] + 1):
+                        coveragepath.append([prevP[0] + j,currentP[1]])
+
+                elif diff[0] == -1:
+                    currentP = [self.fulltree_points[nextpoint][0] * 2 + 1,self.fulltree_points[nextpoint][1] * 2 + 1]
+                    diffP = [currentP[0] - prevP[0],currentP[1] - prevP[1]]
+                    if prevdiff[0] == diff[0] * -1:
+
+                        coveragepath.append([prevP[0]-1,prevP[1]])
+                        coveragepath.append([prevP[0]-1,currentP[1]])
+                        diffP = [currentP[0] - (prevP[0]-1),currentP[1] - currentP[1]]
+                        prevP = coveragepath[len(coveragepath)-1]
+                    elif diffP[1] != 0:
+                        coveragepath.append([prevP[0],currentP[1]])
+                    for j in range(1, diffP[0] + 1):
+                        coveragepath.append([prevP[0] + j,currentP[1]])
+            prev = current
+            prevP = currentP
+            prevdiff = diff
+                '''elif diff[0] == -1:
+                    #print("left")
+                    currentP = [totalpath[0][i][0] * 2 + 1,totalpath[0][i][1] * 2 + 1]
+                    #print("prevP, currentP: ",prevP, currentP)
+                    
+                    diffP = [currentP[0] - prevP[0],currentP[1] - prevP[1]]
+                    #print("diffP: ",diffP)
+                    if prevdiff[0] == diff[0] * -1:
+                        #print("switch")
+
+                        treetraj.append([prevP[0]+1,prevP[1]])
+                        treetraj.append([prevP[0]+1,currentP[1]])
+                        diffP = [currentP[0] - (prevP[0]+1),currentP[1] - currentP[1]]
+                        #print("new diffP: ",diffP)
+                        #print("newprev: ", [currentP[0],prevP[1]+1])
+                        #print("currentP",currentP)
+                        prevP = treetraj[len(treetraj)-1]
+                    elif diffP[1] != 0:
+                        treetraj.append([prevP[0],currentP[1]])
+                    for j in range(-1, diffP[0] - 1,-1):
+                        #print("j: ",j)
+                        treetraj.append([prevP[0] + j,currentP[1]])
+
+                    elif diff[1] == 1:
+                    #print("up")
+                    currentP = [totalpath[0][i][0] * 2 + 1,totalpath[0][i][1] * 2]
+                    #print("prevP, currentP: ",prevP, currentP)
+                    
+                    diffP = [currentP[0] - prevP[0],currentP[1] - prevP[1]]
+                    #print("diffP: ",diffP)
+
+                    if prevdiff[1] == diff[1] * -1:
+                        #print("switch")
+                        treetraj.append([prevP[0],prevP[1]-1])
+                        treetraj.append([currentP[0],prevP[1]-1])
+
+                        diffP = [currentP[0] - currentP[0],currentP[1] - (prevP[1]-1)]
+                        #print("new diffP: ",diffP)
+                        #print("newprev: ", [currentP[0],prevP[1]-1])
+                        #print("currentP",currentP)
+                        prevP = treetraj[len(treetraj)-1]
+                    elif diffP[0] != 0:
+                        treetraj.append([currentP[0],prevP[1]])
+                    
+                    #print("--------")
+
+                    for j in range(1, diffP[1] + 1):
+                        #print("1")
+                        treetraj.append([currentP[0],prevP[1] + j])
+
+
+                    elif diff[1] == -1:
+                    #print("down")
+                    currentP = [totalpath[0][i][0] * 2,totalpath[0][i][1] * 2 + 1]
+                    #print("prevP, currentP: ",prevP, currentP)
+                    
+                    diffP = [currentP[0] - prevP[0],currentP[1] - prevP[1]]
+                    #print("prevdiff, diff: ",prevdiff,diff)
+                    
+                    if prevdiff[1] == diff[1] * -1:
+                        #print("switch")
+
+                        treetraj.append([prevP[0],prevP[1]+1])
+                        treetraj.append([currentP[0],prevP[1]+1])
+                        diffP = [currentP[0] - currentP[0],currentP[1] - (prevP[1]+1)]
+                        #print("new diffP: ",diffP)
+                        #print("newprev: ", [currentP[0],prevP[1]+1])
+                        #print("currentP",currentP)
+                        prevP = treetraj[len(treetraj)-1]
+                    elif diffP[0] != 0:
+                        treetraj.append([currentP[0],prevP[1]])
+                    
+                    for j in range(-1, diffP[1] - 1,-1):
+                        treetraj.append([currentP[0],prevP[1] + j])
+                        #print("treecurrentpoint: ",[currentP[0],prevP[1] + j],j)'''
+    
+                
+
         
 
         
@@ -170,4 +332,4 @@ class SpiralMap(MACPP):
 
 
 
-s=SpiralMap(np.zeros((10,10)),4)
+s=SpiralMap(np.zeros((4,4)),4)

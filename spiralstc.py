@@ -20,7 +20,8 @@ class SpiralMap(MACPP):
         self.tree,self.fulltree,self.fulltree_points=self.spiralSTC(1,startx,starty)
         self.coverage = self.pathcoverage()
         print("full 1 agent path: ",self.coverage)
-        brokendownpath = self.pathbreakdown(startx,starty)
+        self.brokendownpath = self.pathbreakdown(startx,starty)
+        print(self.brokendownpath)
 
 
     def getpath(self,sx:int,sy:int,dx:int,dy:int):
@@ -324,6 +325,8 @@ class SpiralMap(MACPP):
             fullagent[i].pop()
             finalpath.append(fullagent[i]+agentbasic[i])
         print("done")
+        return finalpath
+    
     def agentbase(self):
         pathlist = []
         

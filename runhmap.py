@@ -1,33 +1,38 @@
 import numpy as np
-from macpp import MACPPAgent, MACPP
-from maf import Grid
 import matplotlib.pyplot as plt
-import json
-from matplotlib import colors
 from hmap import HAgent, HGrid, HMap
-import matplotlib.animation as animation
 import cv2
 from tqdm import tqdm
+from task import Baseline, GeneticAlgorithm
 
 
-g=HGrid('room_map_100.json')
+
+filename='room_map_100.json'
+g=HGrid(filename)
 
 
 grid,doors=g.return_grid()
 plt.imshow(grid[0,:,:])
 
+rooms=np.zeros(len(doors))
 
+for room in doors.keys():
+    rooms[int(room)-1]=np.sum(grid[1,:,:]==int(room))
+
+n=3
+speeds=np.ones(n)
+
+g=GeneticAlgorithm(rooms,speeds)
+
+t,cost=g.optimizeGreedy()
 mapob=HMap(grid,4,doors)
 
 agents=[]
-n=3
+
 x,y=mapob.convert(0,0)
 #print(m.n*x+y)
 crds=np.ones(n)*(mapob.n*x+y)
-t=dict()
-t[0]=['1','2']
-t[1]=['3','4']
-t[2]=['5']
+
 telemetry=[]
 for i in range(n):
     agents.append(HAgent(0,99,i,mapob,t[i]))
@@ -68,7 +73,7 @@ print('Completion took {} steps'.format(steps))
 for tel in telemetry:
     print(len(tel))
 
-g=HGrid('room_map_100.json')
+g=HGrid(filename)
 grid,doors=g.return_grid()
 grid=grid[0,:,:]
 plt.imshow(grid)
@@ -76,18 +81,18 @@ l,b=grid.shape
 
 
 def frame(i):
+    crds=[]
     for tel in telemetry:
         if i<len(tel):
             x,y=tel[i]//b,tel[i]%b
+            crds.append([x,y])
             grid[x,y]=2
-    return grid
+        else:
+            crds.append([0,0])
+    return grid,crds
 
 #plt.rcParams['animation.ffmpeg_path']='/home/alokmalik/anaconda3/envs/marl/bin/ffmpeg*'
-fps = 30
-nSeconds = 5
-fig = plt.figure(figsize=(16,16))
-a = frame(55)
-im=plt.imshow(a, interpolation='none', aspect='auto', vmin=-1, vmax=3)
+
 
 
 
@@ -96,11 +101,22 @@ im=plt.imshow(a, interpolation='none', aspect='auto', vmin=-1, vmax=3)
 size = l,b
 frames = max([len(tel) for tel in telemetry])
 fps = 25
-out = cv2.VideoWriter('output.mp4', cv2.VideoWriter_fourcc(*'mp4v'), fps, (size[1], size[0]))
+out = cv2.VideoWriter('video_{}.mp4'.format(filename), cv2.VideoWriter_fourcc(*'mp4v'), fps, (size[1], size[0]))
 for i in tqdm(range(frames)):
-    gray = cv2.normalize(frame(i), None, 255, 0, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8U)
+    g,crds=frame(i)
+    prev=[]
+    i=0
+    for x,y in crds:
+        prev.append(g[x,y])
+        g[x,y]=float(i*3)
+        i+=1
+    gray = cv2.normalize(g, None, 255, 0, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8U)
     gray_3c = cv2.merge([gray, gray, gray])
     out.write(gray_3c)
+    i=0
+    for x,y in crds:
+        g[x,y]=prev[i]
+        i+=1
 out.release()
 
 print('Done!')

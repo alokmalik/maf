@@ -6,7 +6,7 @@ class Grid:
         with open(filename) as f:
             data=json.load(f)
 
-        m,n=data['dimensions'][0]['rows'],data['dimensions'][0]['columns']
+        m,n=data['dimensions'][0],data['dimensions'][0]
 
         grid=np.zeros((n,m))
 

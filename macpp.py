@@ -290,18 +290,22 @@ class MACPPAgent:
         elif am==1:
             for neighbour in self.map.graph[source]:
                 if neighbour==source-b:
+                    self.last_cell=source
                     self.move(0,crds)
                     x,y=self.map.convert(self.x,self.y)
                     return self.b*x+y
                 elif neighbour==source+b:
+                    self.last_cell=source
                     self.move(2,crds)
                     x,y=self.map.convert(self.x,self.y)
                     return self.b*x+y
                 elif neighbour==source+1:
+                    self.last_cell=source
                     self.move(1,crds)
                     x,y=self.map.convert(self.x,self.y)
                     return self.b*x+y
                 elif neighbour==source-1:
+                    self.last_cell=source
                     self.move(3,crds)
                     x,y=self.map.convert(self.x,self.y)
                     return self.b*x+y
@@ -309,18 +313,22 @@ class MACPPAgent:
             while pref:
                 dc=pref.pop(0)
                 if dc==0 and source-b in self.map.graph and source in self.map.graph[source-b] and source-b!=self.last_cell:
+                    self.last_cell=source
                     self.move(dc,crds)
                     x,y=self.map.convert(self.x,self.y)
                     return self.b*x+y
                 elif dc==2 and source+b in self.map.graph and source in self.map.graph[source+b] and source+b!=self.last_cell:
+                    self.last_cell=source
                     self.move(dc,crds)
                     x,y=self.map.convert(self.x,self.y)
                     return self.b*x+y
                 elif dc==1 and source+1 in self.map.graph and source in self.map.graph[source+1] and source+1!=self.last_cell:
+                    self.last_cell=source
                     self.move(dc,crds)
                     x,y=self.map.convert(self.x,self.y)
                     return self.b*x+y
                 elif dc==3 and source-1 in self.map.graph and source in self.map.graph[source-1] and source-1!=self.last_cell:
+                    self.last_cell=source
                     self.move(dc,crds)
                     x,y=self.map.convert(self.x,self.y)
                     return self.b*x+y

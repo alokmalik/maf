@@ -13,12 +13,12 @@ class Grid:
         for d in data['map']:
                 x=d['x']
                 y=d['y']
-                if d['isWall']=='true':
+                if d['isWall']==True:
                     grid[x,y]=-1
         self.grid=grid
     
     def return_grid(self):
-        return self.grid
+        return self.grid.astype('int')
 
 
 

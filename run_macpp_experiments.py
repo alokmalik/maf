@@ -5,7 +5,8 @@ import pandas as pd
 from tqdm import tqdm
 import matplotlib.pyplot as plt
 
-filename='room_map_100.json'
+size=100
+filename='room_map_{}.json'.format(size)
 num_agents=20
 runs=5
 data=np.zeros((num_agents,runs))
@@ -44,4 +45,4 @@ for r in tqdm(range(runs)):
         cols=['Run {}'.format(i) for i in range(runs)]
 
         df = pd.DataFrame(data, columns = cols)
-        df.to_csv('results_macpp_{}.csv'.format(100),index=False)
+        df.to_csv('results_macpp_{}.csv'.format(size),index=False)

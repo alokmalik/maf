@@ -7,8 +7,8 @@ from matplotlib import colors
 import time
 from tqdm import tqdm
 import pandas as pd
-
-filename='room_map_200.json'
+size=100
+filename='room_map_{}.json'.format(size)
 num_agents=20
 runs=10
 data=np.zeros((num_agents,runs))
@@ -43,5 +43,5 @@ for r in tqdm(range(runs)):
         data[n-1,r]=max(count)
         cols=['Run {}'.format(i) for i in range(runs)]
         df = pd.DataFrame(data, columns = cols)
-        df.to_csv('bnm_results_{}'.format(filename),index=False)
+        df.to_csv('bnm_results_{}.csv'.format(size),index=False)
 

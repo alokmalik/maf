@@ -249,6 +249,7 @@ class BNMAgent:
         self.map=map_object
         self.fov=1
         sizey,sizex=self.map.get_size()
+        self.l,self.b=sizey,sizex
         self.indir=np.ones_like((self.map.map))*-1
         self.outdir=np.ones((sizex,sizey))*-1
         #four phases 0: loop detection, 1: loop control,
@@ -354,7 +355,8 @@ class BNMAgent:
             mx,my=self.map.convert(self.x,self.y)
             if self.outdir[mx,my]!=-1 and self.outdir[mx,my]!=(d+2)%2:
                 self.phase=1
-            return self.x,self.y
+            x,y=self.map.convert(self.x,self.y)
+            return self.b*x+y
         #below is the most complicated logic of the code
         #refer the the brick and mortar paper
         #loop control phase
@@ -382,7 +384,8 @@ class BNMAgent:
             #current agent will leave it's effort and move to loop clearning phase
             elif self.map.visited_map[mx,my]>self.id:
                 self.phase=3
-            return self.x,self.y
+            x,y=self.map.convert(self.x,self.y)
+            return self.b*x+y
         #loop closing phase
         elif self.phase==2:
             #if the agent can mark the cell visited that means loop has been closed
@@ -404,9 +407,12 @@ class BNMAgent:
                     d=self.outdir[self.x,self.y]
                     if not self.move(crds,d):
                         raise NameError("Moved into wall cell")
+                    x,y=self.map.convert(self.x,self.y)
+                    return self.b*x+y
                 #skip turn and let other agent move i.e. standby
                 else:
-                    return self.x,self.y
+                    x,y=self.map.convert(self.x,self.y)
+                    return self.b*x+y
         #loop cleaning
         elif self.phase==3:
             mx,my=self.map.convert(self.x,self.y)
@@ -423,7 +429,8 @@ class BNMAgent:
             #if they're not blocking any other path
             if not self.move(crds,d):
                 self.phase=0
-            return self.x,self.y
+            x,y=self.map.convert(self.x,self.y)
+            return self.b*x+y
 
     def state(self):
         return not self.terminate

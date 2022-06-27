@@ -1,13 +1,14 @@
 import numpy as np
-from macpp import MACPPAgent, MACPP
+from macpp import MACPPAgent
+from macpp_online import MACPPOnline
 from maf import Grid
 import pandas as pd
 from tqdm import tqdm
 import matplotlib.pyplot as plt
 
-filename='room_map_100.json'
+filename='room_map_200.json'
 num_agents=20
-runs=5
+runs=10
 data=np.zeros((num_agents,runs))
 g=Grid(filename)
 grid=g.return_grid()
@@ -17,7 +18,7 @@ for r in tqdm(range(runs)):
     for n in tqdm(range(1,num_agents+1)):
         g=Grid(filename)
         grid=g.return_grid()
-        m=MACPP(grid,4)
+        m=MACPPOnline(grid,4)
         agents=[]
         x,y=None,None
         while x==None or grid[x,y]!=0:
@@ -40,8 +41,7 @@ for r in tqdm(range(runs)):
             #if i==0:
             #print(m.marked_visited(),end=' | ')
         data[n-1,r]=max(count)
-
         cols=['Run {}'.format(i) for i in range(runs)]
 
         df = pd.DataFrame(data, columns = cols)
-        df.to_csv('results_macpp_{}.csv'.format(100),index=False)
+        df.to_csv('results_onlinemacpp_{}.csv'.format(200),index=False)

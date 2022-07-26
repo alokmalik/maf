@@ -57,7 +57,7 @@ class HMap:
         self.area={}
         #dict of doors
         self.doors=doors
-        print(self.doors)
+        #print(self.doors)
         #Room numbers start from 1
         for i in range(1,len(doors)+1):
             area=np.sum(self.grid_map[self.map,:,:]==i)
@@ -181,7 +181,7 @@ class HMap:
 
 
 class HAgent:
-    def __init__(self,x:int,y:int,direction:int,map_object:HMap,tasks:list):
+    def __init__(self,x:int,y:int,speed:int,id:int,map_object:HMap,tasks:list):
         '''
         x: x cartesian coordinate of agent
         y: y cartesian coordinate of agent
@@ -196,6 +196,7 @@ class HAgent:
         self.x=x
         self.y=y
         self.last=[x,y]
+        self.speed=speed
         
         #map object is constructed from map class
         self.grid_map=map_object
@@ -390,10 +391,10 @@ class HAgent:
                 return self.b*x+y
             else:
                 self.mode=2
-                x,y=self.lmap.convert(self.x,self.y)
-                print('*'*30)
-                print('Agent {} is complete'.format(self.id))
-                print('*'*30)
+                x,y=self.grid_map.convert(self.x,self.y)
+                #print('*'*30)
+                #print('Agent {} is complete'.format(self.id))
+                #print('*'*30)
                 return self.b*x+y
         #rest mode: after an agent has finished all it's tasks
         elif self.mode==2:

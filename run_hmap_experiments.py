@@ -9,6 +9,7 @@ from macpp import MACPPAgent, MACPP
 from maf import Grid
 import pandas as pd
 import os
+import time
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -28,13 +29,19 @@ data=np.zeros((num_agents,runs))
 hdata=np.zeros((num_agents,runs))
 mutation_probability=.1
 population=5
+timearray=np.zeros((num_agents,runs))
+htimearray=np.zeros((num_agents,runs))
+
 
 
 for r in tqdm(range(runs)):
     visited=np.zeros(shape=(num_agents,num_agents))
     hvisited=np.zeros(shape=(num_agents,num_agents))
+    travel=np.zeros(shape=(num_agents,num_agents))
+    htravel=np.zeros(shape=(num_agents,num_agents))
     for n in tqdm(range(1,num_agents+1)):
         speeds=np.random.randint(low=1,high=10,size=n)
+        starttime=time.time()
         #hmap part
         speeds=np.flip(np.sort(speeds))
         g=HGrid(fname[filename])
@@ -84,6 +91,7 @@ for r in tqdm(range(runs)):
             if agents[i].mode!=2:
                 count[i]+=1
                 hvisited[n-1,i]=agents[i].visited
+                htravel[n-1,i]+=1
             i+=1
             i=i%len(agents)
 
@@ -92,11 +100,23 @@ for r in tqdm(range(runs)):
         rcols = ['agent_{}'.format(i) for i  in range(num_agents)]
         rundf = pd.DataFrame(hvisited, columns = rcols)
         rundf.to_csv('hmap_experiments/hmap_map_{}_size_{}_run_{}_visited.csv'.format(filename,size,r),index=False)
+        tcols = ['agent_{}'.format(i) for i  in range(num_agents)]
+        tdf = pd.DataFrame(htravel, columns = rcols)
+        tdf.to_csv('hmap_experiments/hmap_map_{}_size_{}_run_{}_travelled.csv'.format(filename,size,r),index=False)
         cols=['Run {}'.format(i) for i in range(runs)]
         df = pd.DataFrame(hdata, columns = cols)
         df.to_csv('hmap_experiments/results_hmap_map_{}_size_{}.csv'.format(filename,size),index=False)
+        #print('HMAP finished in {}'.format(time.time()-starttime))
+        htimearray[n-1,r]=time.time()-starttime
+        cols=['Run {}'.format(i) for i in range(runs)]
+        df = pd.DataFrame(htimearray, columns = cols)
+        df.to_csv('hmap_experiments/time_results_hmap_map_{}_size_{}.csv'.format(filename,size),index=False)
 
-
+             
+        
+        
+        
+        starttime=time.time()
         #macpp part
         g=Grid(fname[filename])
         grid=g.return_grid()
@@ -125,6 +145,7 @@ for r in tqdm(range(runs)):
                 visited[n-1,i]=agents[i].visited
             else:
                 count[i]+=1
+                travel[n-1,i]+=1
             i+=1
             i%=n
             #if i==0:
@@ -133,6 +154,16 @@ for r in tqdm(range(runs)):
         rcols = ['agent_{}'.format(i) for i  in range(num_agents)]
         rundf = pd.DataFrame(visited, columns = rcols)
         rundf.to_csv('hmap_experiments/macpp_map_{}_size_{}_run_{}_visited.csv'.format(filename,size,r),index=False)
+        tcols = ['agent_{}'.format(i) for i  in range(num_agents)]
+        tdf = pd.DataFrame(travel, columns = rcols)
+        tdf.to_csv('hmap_experiments/macpp_map_{}_size_{}_run_{}_travelled.csv'.format(filename,size,r),index=False)
         cols=['Run {}'.format(i) for i in range(runs)]
         df = pd.DataFrame(data, columns = cols)
         df.to_csv('hmap_experiments/results_macpp_map_{}_size_{}.csv'.format(filename,size),index=False)
+        print('CPP finished in {}'.format(time.time()-starttime))
+        timearray[n-1,r]=time.time()-starttime
+        cols=['Run {}'.format(i) for i in range(runs)]
+        df = pd.DataFrame(timearray, columns = cols)
+        df.to_csv('hmap_experiments/time_results_macpp_map_{}_size_{}.csv'.format(filename,size),index=False)
+
+

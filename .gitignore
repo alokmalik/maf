@@ -9,6 +9,13 @@ __pycache__/
 
 # C extensions
 *.so
+*.mp4
+*.pdf
+*.png
+*.csv
+*.sh
+*.csv
+*.gif
 
 # Distribution / packaging
 .Python

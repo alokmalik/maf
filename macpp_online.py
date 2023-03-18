@@ -4,13 +4,19 @@ from collections import deque
 import numpy as np
 
 class MACPPOnline(MACPP):
+    '''
+    Online version of MACPP Algorithm
+    '''
     def __init__(self, grid, num_directions):
         super().__init__(grid, num_directions)
         self.global_graph=self.graph
+        #initialize local graph known by agent
+        #it is empty initially as agent has no knowledge of the map in online case
         self.graph=nx.Graph()
 
     def graph_constructor(self,crds,agent,depth):
         '''
+        constructs a graph of agent's field of view
         crds: oned coordinates of all agents
         agent: the id of agent or the index of agent's coordinates in crds
         depth: depth of bfs
@@ -44,7 +50,9 @@ class MACPPOnline(MACPP):
         depth: depth of bfs
         returns action preference scores of each direction
         '''
+        #construct local graph of agent's field of view
         self.graph_constructor(crds,agent,depth)
+        #get action preference scores of each direction from local graph
         return super().get_direction(crds,agent,depth)
 
 

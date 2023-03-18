@@ -2,6 +2,12 @@ import numpy as np
 import json
 
 class Grid:
+    '''
+    This class loads a map from a JSON file and creates a 2D numpy array representing the map. Each cell of the array can have one of the following values:
+    -1: represents a wall in the map
+    0: represents an unexplored cell in the map
+    1 or higher: represents a cell in the map that has been explored and its value indicates the order in which it was explored.
+    '''
     def __init__(self,filename):
         with open(filename) as f:
             data=json.load(f)
@@ -24,9 +30,18 @@ class Grid:
 
 
 class Map:
+    '''
+    This class represents a map. It has the following attributes:
+    map: a 2D numpy array representing the map
+    m: the number of rows in the map
+    n: the number of columns in the map
+    nd: the number of directions in which the agent can move. It can be 4 or 8.
+    explorable: the number of unexplored cells in the map at the beginning
+    explored: the number of explored cells in the map
+    '''
     def __init__(self,grid:np.ndarray,num_directions:int):
         '''
-        input:grid is a numpy array of map
+        input: grid is a numpy array of map
         num_directions: defines if it's a 4 connected grid or 8 connected grid
         '''
         self.map=grid
@@ -34,17 +49,24 @@ class Map:
         self.m,self.n=self.map.shape
         assert num_directions==8 or num_directions==4, "Grid can be 8 or 4 connected only"
         self.nd=num_directions
+        #keep count of number of unexplored cells
         self.explorable=np.sum(self.map==0)
         #keep count of number of explored cells
         self.explored=0
          
     def convert(self,x:int,y:int):
         '''
-        To convert cartesian coordinates to numpy matrix coordinates
+        input: x,y cartesian coordinates of a cell in the grid
+        output: x,y numpy matrix coordinates of a cell in the grid
         '''
         return self.m-y-1,x
     
     def mark(self,x:int,y:int,value:int):
+        '''
+        input: x,y cartesian coordinates of a cell in the grid
+        value: the counter of the agent
+        mark a cell with a particular value
+        '''
         x,y=self.convert(x,y)
         if self.map[x,y]==0:
             self.explored+=1
@@ -52,7 +74,8 @@ class Map:
     
     def grid(self,x:int,y:int):
         '''
-        returns the value of x,y coordinate in grid
+        input: x,y cartesian coordinates of a cell in the grid
+        returns the current value of a cell in the grid
         '''
         if x>=0 and y>=0 and x<self.n and y<self.m:
             x,y=self.convert(x,y)
@@ -62,7 +85,7 @@ class Map:
     
     def covered(self):
         '''
-        returns the covered map fracting
+        returns the covered map fraction
         '''
         return self.explored/self.explorable
     
@@ -74,6 +97,18 @@ class Map:
     
         
 class MAFMap(Map):
+    '''
+    This is class of Map for Multi-Agent Flodding algorithm
+    This class represents a map with points of interest. It has the following attributes:
+    map: a 2D numpy array representing the map
+    m: the number of rows in the map
+    n: the number of columns in the map
+    nd: the number of directions in which the agent can move. It can be 4 or 8.
+    explorable: the number of unexplored cells in the map at the beginning
+    explored: the number of explored cells in the map
+    num_poi: the number of points of interest in the map
+    explored_poi: the number of explored points of interest in the map
+    '''
     def __init__(self,grid:np.ndarray,num_directions:int,num_poi:int):
         '''
         grid: the numpy array of map
@@ -128,11 +163,11 @@ class MAFMap(Map):
         y: y cartesian coordinate of array
         return: available directions and action
         '''
+        unexplored=[]
+        unexplored_directions=[]
+        explored=[]
+        explored_directions=[]
         if self.nd==8:
-            unexplored=[]
-            unexplored_directions=[]
-            explored=[]
-            explored_directions=[]
             d=0
             for xdir in [-1,0,1]:
                 for ydir in [-1,0,1]:
@@ -157,39 +192,41 @@ class MAFMap(Map):
             else:
                 raise NameError('Agent is stuck, no cells to move around!!!')
         elif self.nd==4:
-            raise NotImplementedError("This method for 4 connected grid hasn't been implemented yet")
-
-    #def get_direction(self,x:int,y:int):
-        '''
-        input: x and y coordinate and current direction of agent
-        output: direction to go to, value of cell, and action
-        '''
-        '''if self.nd==8:
-            explored=[]
-            explored_directions=[]
+            '''
+            ToDo: Test this part of code
+            '''
             d=0
-            for xdir in [-1,0,1]:
-                for ydir in [-1,0,1]:
-                    value=self.grid(x+xdir,y+ydir)
-                    if (xdir!=0 or ydir!=0):
-                        #look at only explored cells
-                        if value!=0 and value!=-1 and value!=None and value!=-2:
-                            explored_directions.append(d)
-                            explored.append(value)
-                        d+=1
-            if explored:
-                min_value=min(explored)
-                idx=explored.index(min_value)
-                return [min_value],[explored_directions[idx]],'back'
+            for xdir,ydir in zip([0,1,0,-1],[1,0,-1,0]):
+                value=self.grid(x+xdir,y+ydir)
+                if value==0:
+                    unexplored_directions.append(d)
+                    unexplored.append(0)
+                elif value==-2:
+                    return [-1],[d],'poi'
+                elif value!=None and value!=-1:
+                    explored.append(value)
+                    explored_directions.append(d)
+                d+=1
+            if unexplored_directions:
+                return unexplored,unexplored_directions,'unexplored'
+            elif explored_directions:
+                return explored,explored_directions,'explored'
             else:
-                raise NameError("Impossible scenario, agent can't move anywhere!!!")
-        elif self.nd==4:
-            raise NotImplementedError("This method for 4 connected grid hasn't been implemented yet")'''
-
+                raise NameError('Agent is stuck, no cells to move around!!!')
             
         
         
 class Agent:
+    '''
+    This is class of Agent for Multi-Agent Flodding algorithm
+    This class represents an agent. It has the following attributes:
+    x: the x coordinate of the agent
+    y: the y coordinate of the agent
+    d: the direction in which the agent is moving
+    sc: the step counter of the agent
+    map: the map object which the agent will explore
+    mode: the mode of the agent. 0 for 'search' and 1 for 'return'
+    '''
     def __init__(self,x:int,y:int,direction:int,map_object:MAFMap):
         '''
         x: x cartesian coordinate of agent

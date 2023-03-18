@@ -4,7 +4,24 @@ import numpy as np
 import networkx as nx
 from collections import deque
 import pdb
+
+
 class MACPP(Map):
+    '''
+    Map Class for Multi Agent Coverage Path Planning Algorithm
+    This class inherits from the Map class in maf.py
+    This class has the following attributes:
+    self.map: numpy array of map
+    self.m: length of map
+    self.n: breadth of map
+    self.num_agents: number of agents
+    self.num_directions: number of traversable in map directions, in current implementation it is only 4
+    self.graph: graph object of map
+    self.wall_cell: value of wall cell in map
+    self.explored_cell: value of explored cell in map
+    self.visited: value of visited cell in map
+    self.visit_frequency: numpy array of same size as map, stores the number of times a cell is visited by any agent
+    '''
     def __init__(self, grid, num_directions):
         '''
         grid: numpy array of map
@@ -16,12 +33,12 @@ class MACPP(Map):
         self.explored_cell=1
         self.visited=0
         self.graph=self.makegraph()
-        #self.graph_explored = nx.get_node_attributes(self.graph, "explored")
         self.visit_frequency=np.zeros_like(self.map)
 
     def makegraph(self,grid:np.ndarray=None):
         '''
-        returns the graph object of numpy array
+        grid: numpy array of map
+        returns: graph object of map
         '''
         if grid is None:
             grid=self.map
@@ -74,20 +91,24 @@ class MACPP(Map):
         return paths
 
     def articulation_points(self):
+        '''
+        returns: set of articulation points in graph
+        '''
         return set(nx.articulation_points(self.graph))
 
     def availablemoves(self,crds,agent):
         '''
-        crds: oned coordinate of all agents
-        agent: the index of agent in crds
+        crds: oned coordinates of all agents
+        agent: index of agent in list crds
+        returns: number of available moves for agent in its current position
         '''
         source=crds[agent]
         c=0
         if source in self.graph:
             c=self.graph.degree[source]
+            return c
         else:
             raise NameError('Source Node not in graph')
-        return c
 
     
     def get_direction(self,crds,agent,depth):
@@ -96,7 +117,7 @@ class MACPP(Map):
         agent: index of agent in list crds
         graph: the graph object of map
         depth: depth of bfs
-        returns action preference scores of each direction
+        returns: direction preference scores of each direction
         '''
         l,b=self.m,self.n
         source=crds[agent]
@@ -185,7 +206,6 @@ class MACPP(Map):
         x,y=self.convert(x,y)
         self.visit_frequency[x,y]+=1
         source=self.n*x+y
-        #print(source)
         if source not in self.graph:
             raise NameError('Trying to visit a marked cell')
         elif self.graph.nodes[source]['explored']!=self.explored_cell:
@@ -200,10 +220,28 @@ class MACPP(Map):
         return False
 
     def marked_visited(self):
+        '''
+        returns fraction of cells visited
+        '''
         return self.visited/self.explorable
 
 
 class MACPPAgent:
+    '''
+    Agent class for Multi Agent Coverage Path Planning algorithm
+    This class is used to create an agent object for the MACPP algorithm
+    The agent object has the following attributes:
+    x,y: cartesian coordinates of agent
+    last: last cartesian coordinates of agent
+    map: map object
+    id: id of agent
+    l,b: dimensions of map
+    depth: depth of search
+    last_cell: 1-d coordinate of last cell visited by agent
+    terminate: boolean variable to indicate if agent is terminated
+    visited: number of cells maked visited by agent
+    num_moves: number of moves made by agent
+    '''
     def __init__(self,x,y,id,map_object):
         self.startx=x
         self.starty=y
@@ -222,6 +260,7 @@ class MACPPAgent:
 
     def move(self,direction,crds):
         '''
+        input: direction to move agent, and coordinates of all agents
         move the agent in direction and update it's x,y coordinates in cartesian
         '''
         self.num_moves+=1
@@ -245,13 +284,11 @@ class MACPPAgent:
             #error
             else:
                 raise NameError('Invalid direction input!!')
-            
-
         
-
     def next(self,crds):
         '''
         crds: coordinate of all agents
+        returns the current 1-D coordinate of agent after moving
         '''
         l,b=self.l,self.b
         directions=np.array(self.map.get_direction(crds,self.id,self.depth),dtype=float)
@@ -285,8 +322,10 @@ class MACPPAgent:
             self.move(-1,crds)
             self.terminate=True
             return -self.visited
+        #Case 1: if no available moves, raise error as agent should've been terminated
         if am==0 and len(self.map.graph)!=1:
             raise NameError('Available Actions zero')
+        #Case 2: if only one available move, move in that direction
         elif am==1:
             for neighbour in self.map.graph[source]:
                 if neighbour==source-b:
@@ -309,6 +348,7 @@ class MACPPAgent:
                     self.move(3,crds)
                     x,y=self.map.convert(self.x,self.y)
                     return self.b*x+y
+        #Case 3: if more than one available move, move in direction of highest preference
         else:
             while pref:
                 dc=pref.pop(0)
@@ -336,13 +376,11 @@ class MACPPAgent:
                     continue
             raise NameError('No action Selected,Source: {}, AM: {}, Original Action Preferences: {}, Pref: {}'.format(source,am,pref,directions))
 
-    
     def state(self):
+        '''
+        returns True if agent is active, False if agent is terminated
+        '''
         return not self.terminate
-
-
-
-
             
 if __name__=='__main__':
 

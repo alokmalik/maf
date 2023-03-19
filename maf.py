@@ -31,6 +31,7 @@ class Grid:
 
 class Map:
     '''
+    Base class for map for all algorithms
     This class represents a map. It has the following attributes:
     map: a 2D numpy array representing the map
     m: the number of rows in the map

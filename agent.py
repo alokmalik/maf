@@ -1,6 +1,7 @@
      
         
 class Agent:
+    '''Base Agent class for MAF algorithm'''
     def __init__(self,x,y,sc,direction,map_object):
         '''
         input:

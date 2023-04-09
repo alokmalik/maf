@@ -19,8 +19,8 @@ fname={}
 runs=10
 num_agents=20
 #edit the dictionary for file name of both maps
-fname[0]='room_map_{}.json'.format(size)
-fname[1]='new_room_map_{}.json'.format(size)
+fname[0]='maps/room_map_{}.json'.format(size)
+fname[1]='maps/new_room_map_{}.json'.format(size)
 
 
 data=np.zeros((num_agents,runs))
@@ -28,7 +28,7 @@ g=Grid(fname[filename])
 grid=g.return_grid()
 plt.imshow(grid)
 
-#plt.imshow(grid)
+plt.imshow(grid)
 
 for r in tqdm(range(runs)):
     visited=np.zeros(shape=(num_agents,num_agents))
